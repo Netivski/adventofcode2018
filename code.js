@@ -13,13 +13,8 @@ function httpGet(theUrl) {
 }
 
 function day_1a() {
-    var values = fs.readFileSync('./input_day1.txt', 'utf8').split('\r\n');
-    //var values = input_day1.split(';');
-    var result = 0;
-    for (str of values) {
-        result += parseInt(str);
-    }
-    console.info(result);
+    var expression = fs.readFileSync('./input_day1.txt', 'utf8').replace('\r\n', "");
+    console.info(eval(expression));
 }
 
 function day_1b() {
@@ -177,4 +172,9 @@ function day_3b() {
     console.info("Id with no overlaps is: " + res.values().next().value);
 }
 
-day_3b();
+function day_4a() {
+    var values = fs.readFileSync('./input_day4.txt', 'utf8').split('\r\n');
+
+}
+
+day_4a();
