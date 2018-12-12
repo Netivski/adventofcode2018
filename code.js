@@ -89,7 +89,7 @@ function day_2b() {
     }
 }
 
-function parseClaim( line) {
+function parseClaim(line) {
     //#1277 @ 31,500: 25x27
 
     id = line.substr(1, line.indexOf('@')-1).trim();
@@ -109,7 +109,7 @@ function Claim(id, left, top, width, height) {
     return claim;
 }
 
-function InitArray(rows, cols) {
+function InitClaims(rows, cols) {
     var arr = new Array(rows);
     for (i = 0; i < cols; i++) {
         arr[i] = new Array(cols);
@@ -119,7 +119,7 @@ function InitArray(rows, cols) {
 
 function day_3a() {
     var claims = fs.readFileSync('./input_day3.txt', 'utf8').split('\r\n');
-    var fabric = InitArray(1000, 1000);
+    var fabric = InitClaims(1000, 1000);
     for (line of claims) {
         var claim = parseClaim(line);
         for (i=claim.left; i<claim.left + claim.width; i++) {
@@ -140,7 +140,7 @@ function day_3a() {
 
 function day_3b() {
     var claims = fs.readFileSync('./input_day3.txt', 'utf8').split('\r\n');
-    var fabric = InitArray(1000, 1000);
+    var fabric = InitClaims(1000, 1000);
     for (line of claims) {
         var claim = parseClaim(line);
         for (i=claim.left; i<claim.left + claim.width; i++) {
@@ -172,9 +172,183 @@ function day_3b() {
     console.info("Id with no overlaps is: " + res.values().next().value);
 }
 
-function day_4a() {
-    var values = fs.readFileSync('./input_day4.txt', 'utf8').split('\r\n');
+
+function parseShift(line, idLine) {
+    //[1518-02-28 00:04] Guard #2731 begins shift
+
+    var idxIdStart = idLine.indexOf('#') + 1;
+    var command = GetShiftCommand(line);
+    var id, start, isSleep, idSource;
+
+    date = new Date(line.substr(1, 16));
+    switch (command) {
+        case "guard":
+            idSource = line;
+            start = true;
+            isSleep = false;
+            break;
+        case "falls":
+            idSource = idLine;
+            start = false;
+            isSleep = true;
+            break;
+        case "wakes":
+            idSource = idLine;
+            start = false;
+            isSleep = false;
+            break;
+    }
+    id = parseInt(idSource.substr(idxIdStart, idSource.indexOf("begins") - idxIdStart));
+    return Shift(date, id, start, isSleep);
 
 }
 
-day_4a();
+function GetShiftCommand(line) {
+    return line.substr(19, 5).toLowerCase();
+}
+function Shift(date, id, start, isSleep) {
+    var shift = new Object();
+    shift.date = date;
+    shift.id = id;
+    shift.start = start;
+    shift.isSleep = isSleep;
+    return shift;
+}
+
+function InitShifts() {
+    var input = fs.readFileSync('./input_day4.txt', 'utf8').split('\r\n');
+    input.sort(function(a, b) {
+        return a>b ? 1 : a<b ? -1 : 0;
+    });
+    //console.info(input);
+    var arr = new Array(input.length);
+    var idLine = input[0];
+    for (i = 0; i < input.length; i++) {
+        if (GetShiftCommand(input[i]) == "guard" && i > 0) {
+            idLine = input[i];
+        }
+        arr[i] = parseShift(input[i], idLine);
+    }
+    return arr;
+}
+
+function day_4a() {
+    var shifts = InitShifts();
+    var acc = new Array();
+    var currId = 0;
+    var currMinute = -1;
+    var currIdIdx;
+    for (i=0; i< shifts.length; i++) {
+        
+        if (shifts[i].start) {
+            var idxFound = acc.findIndex(elem => elem.id == shifts[i].id);
+            if ( idxFound >= 0) {
+                currIdIdx = idxFound;
+            } else {
+                acc.push({id: shifts[i].id, sleep: 0, minutes: new Array() });
+                currIdIdx = acc.length - 1;
+            }
+            currId = shifts[i].id;
+            currMinute = -1;
+        }
+
+        if (shifts[i].isSleep) {
+            var thisMinute = shifts[i].date.getMinutes();
+            while (thisMinute < shifts[i+1].date.getMinutes()) {
+                acc[currIdIdx].sleep +=1;
+                var idxMinFound  = acc[currIdIdx].minutes.findIndex(e  => e.minute == thisMinute);
+                if (idxMinFound >= 0) {
+                    acc[currIdIdx].minutes[idxMinFound].sleep += 1;
+                } else {
+                    acc[currIdIdx].minutes.push({minute: thisMinute, sleep: 1 });
+                }
+                thisMinute += 1;
+            }
+        }
+    }
+    acc.sort(function(a, b) {
+        return a.sleep>b.sleep ? -1 : a.sleep<b.sleep ? 1 : 0;
+    });
+    acc[0].minutes.sort(function(a, b) { return a.sleep>b.sleep ? -1 : a.sleep<b.sleep ? 1 : 0; });
+    console.info("Guard Id is " + acc[0].id + " and slept " + acc[0].minutes[0].sleep + " minutes on minute " + acc[0].minutes[0].minute);   
+}
+
+function day_4b() {
+    var shifts = InitShifts();
+    var acc = new Array(61);
+    var currId = 0;
+    var currIdIdx;
+    for (i=0; i<acc.length; i++) { acc[i] = { minute: i, sleep: 0, guards: new Array() }; }
+    for (i=0; i< shifts.length; i++) {
+        if (shifts[i].start) { currId = shifts[i].id; }
+        if (shifts[i].isSleep) {
+            var thisMinute = shifts[i].date.getMinutes();
+            while (thisMinute < shifts[i+1].date.getMinutes()) {
+                acc[thisMinute].sleep += 1;
+                var currIdIdx = acc[thisMinute].guards.findIndex(e => e.id == currId);
+                if (currIdIdx >= 0) {
+                    acc[thisMinute].guards[currIdIdx].sleep += 1;
+                } else {
+                    acc[thisMinute].guards.push({id: currId, sleep: 1});
+                }
+                thisMinute += 1;
+            }
+        }
+    }
+    for (i=0; i < acc.length; i++) {
+        if (acc[i].guards[0] == undefined) {
+            acc[i].guards.push({id: 0, sleep: 0});
+        }
+        acc[i].guards.sort(function (a,b) { return a.sleep > b.sleep ? -1 : a.sleep < b.sleep ? 1 : 0 });
+    }
+
+    acc.sort(function(a,b) { return a.guards[0].sleep > b.guards[0].sleep ? -1 : a.guards[0].sleep < b.guards[0].sleep ? 1 : 0  });
+    
+    console.info("Guard Id is " + acc[0].guards[0].id + " and slept " + acc[0].guards[0].sleep + " minutes on minute " + acc[0].minute);   
+}
+
+function react(input) {
+    var reacting = true;
+    var index = 0;
+
+    while (reacting) {
+        var charA = input[index]; 
+        var charB = input[index+1]; 
+        if (charA.toLowerCase() == charB.toLowerCase() && charA != charB) {
+            input.splice(index, 2);
+            index = 0;
+        } else {
+            index++;
+            if (!input[index + 1]) {
+                reacting = false;
+            }
+        }
+        if (index >= input.length) {
+            reacting = false;
+        }
+    }
+    return input;
+}
+
+function day_5a() {
+    var input = fs.readFileSync('./input_day5.txt', 'utf8');
+    var result = react(input.split(''));
+    console.info("Resulting number of units in polymer is: " + result.join("").length);
+}
+
+function day_5b() {
+    var input = fs.readFileSync('./input_day5.txt', 'utf8').split('');
+    var result = new Array();
+
+    input.filter(e => e == "a");
+
+    var temp;
+    for (i=65; i<=90; i++) {
+        temp = input.filter(e => e != String.fromCharCode(i) && e != String.fromCharCode(i+32));
+        result.push(react(temp).join("").length);
+    }
+    result.sort(function (a,b) { return a>b ? 1 : a<b ? -1 : 0; });
+    console.info("Lowest polymer size is " + result[0]);
+}
+
+day_5b();
