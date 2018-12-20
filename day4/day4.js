@@ -1,4 +1,5 @@
 var fs = require('fs');
+var folder = "day4/"
 
 String.prototype.replaceAt=function(index, replacement) {
     return this.substr(0, index) + replacement + this.substr(1 + index + replacement.length);
@@ -47,7 +48,7 @@ function Shift(date, id, start, isSleep) {
 }
 
 function InitShifts() {
-    var input = fs.readFileSync('./input_day4.txt', 'utf8').split('\r\n');
+    var input = fs.readFileSync('./' + folder + 'input_day4.txt', 'utf8').split('\r\n');
     input.sort(function(a, b) {
         return a>b ? 1 : a<b ? -1 : 0;
     });

@@ -1,4 +1,5 @@
 var fs = require('fs');
+var folder = "day5/"
 
 String.prototype.replaceAt=function(index, replacement) {
     return this.substr(0, index) + replacement + this.substr(1 + index + replacement.length);
@@ -28,13 +29,13 @@ function react(input) {
 }
 
 function day_5a() {
-    var input = fs.readFileSync('./input_day5.txt', 'utf8');
+    var input = fs.readFileSync('./' + folder + 'input_day5.txt', 'utf8');
     var result = react(input.split(''));
     console.info("Resulting number of units in polymer is: " + result.join("").length);
 }
 
 function day_5b() {
-    var input = fs.readFileSync('./input_day5.txt', 'utf8').split('');
+    var input = fs.readFileSync('./' + folder + 'input_day5.txt', 'utf8').split('');
     var result = new Array();
 
     input.filter(e => e == "a");

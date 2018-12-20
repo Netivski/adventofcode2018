@@ -1,11 +1,12 @@
 var fs = require('fs');
+var folder = "day2/"
 
 String.prototype.replaceAt=function(index, replacement) {
     return this.substr(0, index) + replacement + this.substr(1 + index + replacement.length);
 }
 
 function day_2a() {
-    var values = fs.readFileSync('./input_day2.txt', 'utf8').split('\r\n');
+    var values = fs.readFileSync('./' + folder + 'input_day2.txt', 'utf8').split('\r\n');
     //var values = input_day2.split(';');
     var nrTwice = 0;
     var nrTrice = 0;
@@ -33,7 +34,7 @@ function day_2a() {
 }
 
 function day_2b() {
-    var values = fs.readFileSync('./input_day2.txt', 'utf8').split('\r\n');
+    var values = fs.readFileSync('./' + folder + 'input_day2.txt', 'utf8').split('\r\n');
     //var values = input_day2.split(';');
     for (i=0; i<values.length; i++) {
         for (j=i+1; j<values.length; j++) {

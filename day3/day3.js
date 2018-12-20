@@ -1,4 +1,5 @@
 var fs = require('fs');
+var folder = "day3/"
 
 String.prototype.replaceAt=function(index, replacement) {
     return this.substr(0, index) + replacement + this.substr(1 + index + replacement.length);
@@ -33,7 +34,7 @@ function InitClaims(rows, cols) {
 }
 
 function day_3a() {
-    var claims = fs.readFileSync('./input_day3.txt', 'utf8').split('\r\n');
+    var claims = fs.readFileSync('./' + folder + 'input_day3.txt', 'utf8').split('\r\n');
     var fabric = InitClaims(1000, 1000);
     for (line of claims) {
         var claim = parseClaim(line);
@@ -54,7 +55,7 @@ function day_3a() {
 }
 
 function day_3b() {
-    var claims = fs.readFileSync('./input_day3.txt', 'utf8').split('\r\n');
+    var claims = fs.readFileSync('./' + folder + 'input_day3.txt', 'utf8').split('\r\n');
     var fabric = InitClaims(1000, 1000);
     for (line of claims) {
         var claim = parseClaim(line);
